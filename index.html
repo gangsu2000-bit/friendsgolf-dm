@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friends Golf · 室內高爾夫球模擬器設備方案</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg:       #0a0e0b;
+  --bg-warm:  #0d1410;
+  --bg-elev:  #131a14;
+  --ink:      #f2eee4;
+  --ink-mute: #b8b2a4;
+  --ink-dim:  #6e685e;
+  --gold:     #e5b935;
+  --gold-soft:#f0cf6b;
+  --gold-deep:#c89516;
+  --green:    #6e8c54;
+  --green-deep:#3d5230;
+}
+
+body {
+  font-family: -apple-system, 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  background: #111;
+  color: var(--ink);
+}
+
+.wrapper { max-width: 600px; margin: 0 auto; background: var(--bg); }
+
+/* ── HEADER / LOGO ── */
+.top-bar {
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(229,185,53,0.15);
+}
+.brand-logo {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: var(--ink);
+}
+.brand-logo .brk { color: var(--gold); }
+.brand-tag {
+  font-size: 10px;
+  color: var(--ink-dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* ── HERO ── */
+.hero {
+  position: relative;
+  height: 340px;
+  overflow: hidden;
+}
+.hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  filter: brightness(0.45);
+}
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    rgba(10,14,11,0.2) 0%,
+    rgba(10,14,11,0.5) 50%,
+    rgba(10,14,11,0.95) 100%);
+}
+.hero-content {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 28px 24px;
+}
+.hero-eyebrow {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+.hero h1 {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+.hero h1 em { color: var(--gold); font-style: normal; }
+.hero-sub {
+  font-size: 12px;
+  color: var(--ink-mute);
+  line-height: 1.7;
+  margin-bottom: 18px;
+}
+.hero-stats {
+  display: flex;
+  gap: 24px;
+}
+.stat-num { font-size: 22px; font-weight: 900; color: var(--gold); display: block; line-height: 1; }
+.stat-label { font-size: 10px; color: var(--ink-dim); margin-top: 3px; letter-spacing: 1px; }
+
+/* ── SECTION ── */
+.section { padding: 36px 24px; }
+.section-eyebrow {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--gold);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.section-heading {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.35;
+  margin-bottom: 8px;
+}
+.section-body {
+  font-size: 13px;
+  color: var(--ink-mute);
+  line-height: 1.8;
+}
+.divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(229,185,53,0.2), transparent);
+  margin: 0 24px;
+}
+
+/* ── VALUE PROPS ── */
+.value-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+}
+.val-card {
+  background: var(--bg-elev);
+  border-radius: 12px;
+  padding: 16px 14px;
+  border: 1px solid rgba(229,185,53,0.12);
+  border-left: 3px solid var(--gold);
+}
+.val-icon { font-size: 20px; margin-bottom: 7px; display: block; }
+.val-card h4 { font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+.val-card p  { font-size: 11px; color: var(--ink-dim); line-height: 1.55; }
+
+/* ── VENUE PHOTO STRIP ── */
+.venue-photo {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  filter: brightness(0.8);
+}
+.venue-caption {
+  background: var(--bg-elev);
+  padding: 10px 24px;
+  font-size: 11px;
+  color: var(--ink-dim);
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(229,185,53,0.1);
+}
+.venue-caption span { color: var(--gold); }
+
+/* ── MODEL CARDS ── */
+.models-bg { background: var(--bg-warm); padding: 36px 24px; }
+
+.model-card {
+  background: var(--bg);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.model-card:last-child { margin-bottom: 0; }
+
+.model-img-wrap { position: relative; height: 190px; overflow: hidden; background: #0a0e0b; }
+.model-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform 0.3s;
+}
+.model-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(10,14,11,0.9) 100%);
+}
+.model-img-label {
+  position: absolute;
+  bottom: 14px; left: 18px;
+}
+.model-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 10px;
+  display: inline-block;
+  margin-bottom: 5px;
+}
+.badge-entry  { background: rgba(33,150,243,0.25); color: #64b5f6; border: 1px solid rgba(33,150,243,0.4); }
+.badge-com    { background: rgba(229,185,53,0.2);  color: var(--gold); border: 1px solid rgba(229,185,53,0.4); }
+.badge-t2     { background: rgba(110,140,84,0.25); color: #a5c778; border: 1px solid rgba(110,140,84,0.4); }
+.badge-q      { background: rgba(156,39,176,0.2);  color: #ce93d8; border: 1px solid rgba(156,39,176,0.35); }
+
+.model-name-hero { font-size: 26px; font-weight: 900; color: var(--ink); line-height: 1; }
+
+.model-body { padding: 16px 18px 20px; }
+.model-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.model-tag  { font-size: 11px; color: var(--ink-mute); font-style: italic; }
+.model-price { font-size: 22px; font-weight: 900; line-height: 1; }
+.price-entry { color: #64b5f6; }
+.price-com   { color: var(--gold); }
+.price-t2    { color: #a5c778; }
+.price-q     { color: #ce93d8; }
+
+.model-target {
+  font-size: 11px;
+  color: var(--ink-dim);
+  background: var(--bg-elev);
+  padding: 9px 12px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  line-height: 1.6;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+}
+.fi { display: flex; align-items: center; gap: 6px; font-size: 11.5px; }
+.dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.dot-on  { background: var(--gold); }
+.dot-off { background: #2a2a2a; }
+.dot-opt { background: #6e8c54; }
+.fi-on  { color: var(--ink-mute); }
+.fi-off { color: #3a3a3a; }
+.fi-opt { color: var(--green); font-weight: 600; }
+
+/* Best Seller ribbon */
+.ribbon-wrap { position: relative; overflow: hidden; }
+.ribbon {
+  position: absolute;
+  top: 18px; right: -30px;
+  background: var(--gold);
+  color: #0a0e0b;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  padding: 5px 40px;
+  transform: rotate(45deg);
+  z-index: 10;
+  text-transform: uppercase;
+}
+
+/* ── SOFTWARE UI SHOWCASE ── */
+.ui-showcase {
+  position: relative;
+  overflow: hidden;
+}
+.ui-img {
+  width: 100%;
+  display: block;
+  filter: brightness(0.75);
+}
+.ui-caption {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(to top, rgba(10,14,11,0.95), transparent);
+  padding: 20px 24px 16px;
+}
+.ui-caption h3 { font-size: 15px; font-weight: 800; color: var(--ink); margin-bottom: 3px; }
+.ui-caption p  { font-size: 11px; color: var(--ink-mute); }
+
+/* ── UPGRADE PATH ── */
+.upgrade-section { padding: 36px 24px; background: var(--bg-warm); }
+.upgrade-flow {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(229,185,53,0.15);
+}
+.upgrade-step {
+  flex: 1;
+  padding: 18px 12px;
+  text-align: center;
+  background: var(--bg-elev);
+}
+.u-price { font-size: 18px; font-weight: 900; margin-bottom: 2px; }
+.u-name  { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.u-desc  { font-size: 10px; color: var(--ink-dim); margin-top: 5px; line-height: 1.5; }
+.upgrade-arrow {
+  padding: 0 8px;
+  font-size: 18px;
+  color: var(--gold);
+  background: var(--bg-elev);
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid rgba(229,185,53,0.1);
+  border-right: 1px solid rgba(229,185,53,0.1);
+}
+.upgrade-note {
+  margin-top: 14px;
+  background: var(--bg-elev);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 12px;
+  color: var(--ink-mute);
+  line-height: 1.7;
+  border-left: 3px solid var(--gold);
+}
+.upgrade-note strong { color: var(--gold); }
+
+/* ── ADD-ON TABLE ── */
+.addon-section { padding: 36px 24px; }
+.addon-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 16px;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.addon-table th {
+  background: var(--bg-elev);
+  color: var(--gold);
+  padding: 11px 14px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(229,185,53,0.2);
+}
+.addon-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  color: var(--ink-mute);
+}
+.addon-table tr:last-child td { border-bottom: none; }
+.addon-table tr:hover td { background: var(--bg-elev); }
+.price-tag { color: var(--gold); font-weight: 700; }
+
+/* ── ADDON NEW ── */
+.addon-new-section { padding: 0 0 28px; background: var(--bg-warm); }
+.addon-new-hdr {
+  background: #141e1a;
+  padding: 22px 24px 14px;
+  text-align: center;
+  border-bottom: 1px solid rgba(229,185,53,0.15);
+}
+.addon-new-hdr h2 { font-size: 19px; font-weight: 900; color: var(--ink); margin-bottom: 5px; }
+.addon-new-hdr p  { font-size: 11px; color: var(--ink-dim); font-style: italic; letter-spacing: 0.3px; }
+
+.addon-group { margin: 16px 16px 0; border-radius: 10px; overflow: hidden; }
+.addon-group-title {
+  padding: 9px 14px;
+  font-size: 13px; font-weight: 800; color: #fff;
+}
+.title-teal   { background: #2a5060; }
+.title-green  { background: #3a6428; }
+.title-orange { background: #b84c00; }
+
+.addon-tbl { width: 100%; border-collapse: collapse; font-size: 11px; }
+.addon-tbl thead tr { background: #1b2e28; }
+.addon-tbl thead th {
+  padding: 8px 8px; color: var(--ink-mute); font-weight: 700;
+  text-align: center; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.addon-tbl tbody tr:nth-child(odd)  { background: #101812; }
+.addon-tbl tbody tr:nth-child(even) { background: #0d1410; }
+.addon-tbl tbody td {
+  padding: 9px 8px; color: var(--ink);
+  text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.addon-tbl tbody td:first-child { text-align: left; padding-left: 12px; }
+.addon-note {
+  margin: 14px 16px 0; font-size: 10px; color: var(--ink-dim);
+  line-height: 1.7; padding: 10px 12px;
+  background: rgba(229,185,53,0.06);
+  border-radius: 8px; border-left: 3px solid rgba(229,185,53,0.3);
+}
+
+/* ── VENUE GALLERY ── */
+.gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+.gallery-item { position: relative; overflow: hidden; }
+.gallery-item img { width: 100%; height: 160px; object-fit: cover; display: block; filter: brightness(0.72); transition: filter 0.2s; }
+.gallery-item:hover img { filter: brightness(0.88); }
+.gallery-label {
+  position: absolute;
+  bottom: 8px; left: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--gold);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+  text-transform: uppercase;
+}
+
+/* ── MASCOT / BRAND STRIP ── */
+.brand-strip {
+  background: var(--gold);
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.mascot-img { height: 90px; flex-shrink: 0; }
+.brand-strip-text h3 {
+  font-size: 16px;
+  font-weight: 900;
+  color: #0a0e0b;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+.brand-strip-text p {
+  font-size: 11px;
+  color: rgba(10,14,11,0.65);
+  line-height: 1.6;
+}
+
+/* ── SUPPORT ── */
+.support-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+}
+.support-item {
+  background: var(--bg-elev);
+  border-radius: 12px;
+  padding: 16px 10px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.support-icon { font-size: 22px; display: block; margin-bottom: 7px; }
+.support-item h4 { font-size: 11px; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+.support-item p  { font-size: 10px; color: var(--ink-dim); line-height: 1.45; }
+
+/* ── CTA ── */
+.cta-section {
+  background: var(--bg-elev);
+  padding: 44px 28px 40px;
+  text-align: center;
+  border-top: 1px solid rgba(229,185,53,0.2);
+}
+.cta-section h2 { font-size: 22px; font-weight: 900; color: var(--ink); margin-bottom: 10px; line-height: 1.4; }
+.cta-section h2 em { color: var(--gold); font-style: normal; }
+.cta-section p { font-size: 13px; color: var(--ink-mute); margin-bottom: 28px; line-height: 1.8; }
+.cta-btn {
+  display: inline-block;
+  background: var(--gold);
+  color: #0a0e0b;
+  font-size: 14px;
+  font-weight: 900;
+  padding: 14px 40px;
+  border-radius: 30px;
+  text-decoration: none;
+  letter-spacing: 1px;
+}
+.cta-sub { margin-top: 16px; font-size: 11px; color: var(--ink-dim); }
+
+/* ── FOOTER ── */
+.footer {
+  background: #060908;
+  padding: 22px 24px;
+  text-align: center;
+  border-top: 1px solid rgba(229,185,53,0.08);
+}
+.footer-brand { font-size: 12px; font-weight: 900; color: var(--ink-dim); margin-bottom: 6px; letter-spacing: 1px; }
+.footer-brand .brk { color: var(--gold-deep); }
+.footer p { font-size: 10px; color: #3a3a3a; line-height: 1.8; }
+
+@media (max-width: 400px) {
+  .hero { height: 280px; }
+  .hero h1 { font-size: 23px; }
+  .value-grid { grid-template-columns: 1fr; }
+  .support-grid { grid-template-columns: 1fr 1fr; }
+  .features-grid { grid-template-columns: 1fr; }
+  .gallery img { height: 110px; }
+  .brand-strip { flex-direction: column; text-align: center; }
+  .mascot-img { height: 70px; }
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- ══ TOP BAR ════════════════════════════════════ -->
+  <div class="top-bar">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <img src="DM_assets/fg-logo.png" alt="Friends Golf"
+           style="height:48px; width:48px; object-fit:contain; display:block;">
+      <div>
+        <div class="brand-logo" style="font-size:14px; letter-spacing:1.5px;">
+          FRIENDS GOLF
+        </div>
+        <div style="font-size:9px; color:var(--ink-dim); letter-spacing:2px; margin-top:2px;">
+          FRIENDS SCREEN · 金麻吉科技
+        </div>
+      </div>
+    </div>
+    <div class="brand-tag">設備方案 2025</div>
+  </div>
+
+  <!-- ══ HERO ══════════════════════════════════════ -->
+  <div class="hero">
+    <img class="hero-img" src="DM_assets/venue_beitou.jpg" alt="Friends Screen 北投館">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">Indoor Golf Simulator</div>
+      <h1>室內<em>高爾夫球</em><br>模擬器設備方案</h1>
+      <p class="hero-sub">不受天氣限制，隨時享受高爾夫體驗<br>為您的空間創造全新收益模式</p>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-num">400+</span>
+          <span class="stat-label">虛擬球場</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">4</span>
+          <span class="stat-label">方案選擇</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">55萬</span>
+          <span class="stat-label">起導入</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ WHY ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-eyebrow">為什麼選擇室內高爾夫球</div>
+    <div class="section-heading">為既有空間<br>創造全新商業價值</div>
+    <p class="section-body">
+      室內高爾夫球模擬器不只是讓人在室內打高爾夫的機器，而是一套能為既有空間導入體驗型內容、會員服務與多元收益模式的營運解決方案。
+    </p>
+    <div class="value-grid">
+      <div class="val-card">
+        <span class="val-icon">🌧️</span>
+        <h4>不受天氣影響</h4>
+        <p>雨天、夜間、淡季照常營運，維持穩定收益</p>
+      </div>
+      <div class="val-card">
+        <span class="val-icon">👨‍👩‍👧</span>
+        <h4>擴大客群接觸</h4>
+        <p>初學者、女性、上班族、家庭皆可輕鬆體驗</p>
+      </div>
+      <div class="val-card">
+        <span class="val-icon">💰</span>
+        <h4>多元收益來源</h4>
+        <p>練習、教學、賽事、會員方案、企業活動</p>
+      </div>
+      <div class="val-card">
+        <span class="val-icon">📐</span>
+        <h4>提升空間坪效</h4>
+        <p>適合導入百貨、健身中心、飯店等既有空間</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SOFTWARE UI SHOWCASE ═══════════════════════ -->
+  <div class="ui-showcase">
+    <img class="ui-img" src="DM_assets/ui.png" alt="軟體功能介面">
+    <div class="ui-caption">
+      <h3>直覺操作介面，功能豐富</h3>
+      <p>長打、短打、推桿訓練 ／ 球場下場 ／ AI揮桿分析 ／ 賽事系統</p>
+    </div>
+  </div>
+
+  <div class="divider" style="margin-top:0;"></div>
+
+  <!-- ══ MODEL LINEUP ═══════════════════════════════ -->
+  <div class="models-bg">
+    <div class="section-eyebrow">設備方案</div>
+    <div class="section-heading">四款方案，滿足不同需求</div>
+    <p class="section-body" style="margin-bottom:24px;">從個人工作室到旗艦場館，依場域規模與營運目標靈活選擇。</p>
+
+    <!-- TR Entry -->
+    <div class="model-card">
+      <div class="model-img-wrap">
+        <img class="model-img" src="DM_assets/screen-data.jpg" alt="TR 模擬器" style="object-fit:cover; object-position: center 35%;">
+        <div class="model-img-overlay"></div>
+        <div class="model-img-label">
+          <span class="model-badge badge-entry">入門版</span>
+          <div class="model-name-hero">TR</div>
+        </div>
+      </div>
+      <div class="model-body">
+        <div class="model-meta">
+          <div class="model-tag">入門練習型 — 降低導入門檻</div>
+          <div class="model-price price-entry">55萬</div>
+        </div>
+        <div class="model-target">🏠 個人工作室 ／ 建案公設 ／ 小型空間 ／ 初期市場測試</div>
+        <div class="features-grid">
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">練習場模式</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">AI 揮桿分析</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">球桿測定</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">APP 紀錄</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">後方鏡頭</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">下場模式（9洞）</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">69 球場</span></div>
+          <div class="fi"><span class="dot dot-off"></span><span class="fi-off">趣味遊戲</span></div>
+          <div class="fi"><span class="dot dot-off"></span><span class="fi-off">大賽功能</span></div>
+          <div class="fi"><span class="dot dot-off"></span><span class="fi-off">即時連線</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TR Commercial — BEST SELLER -->
+    <div class="model-card ribbon-wrap">
+      <div class="ribbon">主力推薦</div>
+      <div class="model-img-wrap">
+        <img class="model-img" src="DM_assets/tr-commercial-range.png" alt="TR 商業版" style="object-fit:cover; object-position: center 35%;">
+        <div class="model-img-overlay"></div>
+        <div class="model-img-label">
+          <span class="model-badge badge-com">商業版 ★</span>
+          <div class="model-name-hero">TR</div>
+        </div>
+      </div>
+      <div class="model-body">
+        <div class="model-meta">
+          <div class="model-tag">商業娛樂型 — 主力銷售方案</div>
+          <div class="model-price price-com">70 / 75萬</div>
+        </div>
+        <div class="model-target">🏌️ 商業場館 ／ 會員制球館 ／ 高爾夫練習場 ／ 健身中心</div>
+        <div class="features-grid">
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">練習場模式</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">AI 揮桿分析</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">球桿測定</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">APP 紀錄</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">後方鏡頭</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">趣味遊戲</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">大賽功能</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">下場模式（18洞）</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">99 球場</span></div>
+          <div class="fi"><span class="dot dot-off"></span><span class="fi-off">即時連線</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T2 -->
+    <div class="model-card">
+      <div class="model-img-wrap">
+        <img class="model-img" src="DM_assets/t2.png" alt="T2 社交競賽版" style="object-fit:cover; object-position: center 40%;">
+        <div class="model-img-overlay"></div>
+        <div class="model-img-label">
+          <span class="model-badge badge-t2">社交競賽版</span>
+          <div class="model-name-hero">T2</div>
+        </div>
+      </div>
+      <div class="model-body">
+        <div class="model-meta">
+          <div class="model-tag">社交競賽型 — 多人連線互動</div>
+          <div class="model-price price-t2">90萬</div>
+        </div>
+        <div class="model-target">🏆 旗艦球館 ／ 高端健身中心 ／ 聯盟賽場館 ／ 百貨商場</div>
+        <div class="features-grid">
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">練習場模式</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">趣味遊戲</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">AI 揮桿分析</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">即時連線</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">活動功能</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">大賽功能</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">APP 紀錄</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">後方鏡頭</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">下場模式（18洞）</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">405 球場</span></div>
+          <div class="fi"><span class="dot dot-opt"></span><span class="fi-opt">動態平台（加購）</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q -->
+    <div class="model-card">
+      <div class="model-img-wrap" style="height:220px;">
+        <img class="model-img" src="DM_assets/interior-quantum.png" alt="Q 9軸動態平台"
+             style="object-fit:cover; object-position: center 30%;">
+        <div class="model-img-overlay"></div>
+        <!-- 9-axis platform badge -->
+        <div style="position:absolute;top:14px;right:16px;background:rgba(156,39,176,0.85);
+                    border:1px solid rgba(206,147,216,0.5);border-radius:8px;
+                    padding:8px 12px;text-align:center;backdrop-filter:blur(4px);">
+          <div style="font-size:18px;font-weight:900;color:#fff;line-height:1;">9軸</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.8);letter-spacing:1px;margin-top:2px;">動態平台 標配</div>
+        </div>
+        <div class="model-img-label">
+          <span class="model-badge badge-q">旗艦沉浸版</span>
+          <div class="model-name-hero">Q</div>
+        </div>
+      </div>
+      <!-- 9-axis highlight strip -->
+      <div style="background:linear-gradient(135deg,#1a0a20,#2d1040);padding:12px 18px;
+                  border-bottom:1px solid rgba(156,39,176,0.25);display:flex;align-items:center;gap:12px;">
+        <div style="font-size:22px;">🎯</div>
+        <div>
+          <div style="font-size:12px;font-weight:800;color:#ce93d8;margin-bottom:2px;">核心亮點：9軸動態模擬平台（9-Axis Motion Platform）</div>
+          <div style="font-size:11px;color:var(--ink-dim);line-height:1.5;">隨揮桿動態傾斜，模擬真實球道坡度，帶來最接近戶外球場的沉浸式體驗。</div>
+        </div>
+      </div>
+      <div class="model-body">
+        <div class="model-meta">
+          <div class="model-tag">旗艦沉浸型 — 最接近真實高爾夫</div>
+          <div class="model-price price-q">150萬</div>
+        </div>
+        <div class="model-target">👑 飯店 ／ 度假村 ／ VIP空間 ／ 高階訓練場館</div>
+        <div class="features-grid">
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">練習場模式</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">趣味遊戲</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">AI 揮桿分析</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">即時連線</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">9軸動態平台（標配）</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">APP 紀錄</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">下場模式（18洞）</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">374 球場</span></div>
+          <div class="fi"><span class="dot dot-on"></span><span class="fi-on">高爾夫球體（標配）</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /models-bg -->
+
+  <!-- ══ VENUE GALLERY ══════════════════════════════ -->
+  <div class="venue-caption"><span>[ FRIENDS ]</span> SCREEN 實景場館</div>
+  <div class="gallery">
+    <div class="gallery-item">
+      <img src="DM_assets/venue_beitou.jpg" alt="北投旗艦館外觀"
+           style="object-position: 48% 72%;">
+      <span class="gallery-label">北投旗艦館 外觀</span>
+    </div>
+    <div class="gallery-item">
+      <img src="DM_assets/venue-flagship-interior.jpg" alt="旗艦館實景全景"
+           style="object-position: center 40%;">
+      <span class="gallery-label">旗艦館 實景全景</span>
+    </div>
+    <div class="gallery-item">
+      <img src="DM_assets/venue_tianmu.jpg" alt="百貨商場導入案例"
+           style="object-position: 50% 35%;">
+      <span class="gallery-label">百貨商場 導入案例</span>
+    </div>
+    <div class="gallery-item">
+      <img src="DM_assets/旗艦店VIP.jpg" alt="Quantum 旗艦體驗室"
+           style="object-position: center 30%;">
+      <span class="gallery-label">Quantum 旗艦體驗室</span>
+    </div>
+  </div>
+
+  <!-- ══ 加購 & 升級方案 ══════════════════════════════ -->
+  <div class="addon-new-section">
+    <div class="addon-new-hdr">
+      <h2>加購&amp; 升級方案</h2>
+      <p>一次性追加費用，無需重新購買設備</p>
+    </div>
+
+    <!-- ① 球場包加購 -->
+    <div class="addon-group">
+      <div class="addon-group-title title-teal">① 球場包加購（一次性）</div>
+      <table class="addon-tbl">
+        <thead><tr><th>加購項目</th><th>適用機型</th><th>費用（萬）</th><th>備註</th></tr></thead>
+        <tbody>
+          <tr><td>加 50 球場</td><td>TR</td><td>3 – 5 萬</td><td>一次性費用</td></tr>
+          <tr><td>加 100 球場</td><td>TR</td><td>6 – 8 萬</td><td>一次性費用</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ② TR 軟體版本升級 -->
+    <div class="addon-group">
+      <div class="addon-group-title title-green">② TR 軟體版本升級（入門→商業）</div>
+      <table class="addon-tbl">
+        <thead><tr><th>升級內容</th><th>原版本</th><th>目標版本</th><th>費用</th></tr></thead>
+        <tbody>
+          <tr><td>趣味遊戲＋大賽功能 開放</td><td>TR 入門（55萬）</td><td>TR 商業（75萬）</td><td>差額追加</td></tr>
+          <tr><td>18洞 / 99球場 擴充</td><td>9洞 / 69球場</td><td>18洞 / 99球場</td><td>已含</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ③ 動態平台加購 -->
+    <div class="addon-group">
+      <div class="addon-group-title title-orange">③ 動態平台加購</div>
+      <table class="addon-tbl">
+        <thead><tr><th>項目</th><th>適用機型</th><th>費用</th><th>備註</th></tr></thead>
+        <tbody>
+          <tr><td>動態平台加購</td><td>T2</td><td>20萬</td><td>依場館需求</td></tr>
+          <tr><td>動態平台標配</td><td>Q</td><td>已含</td><td>旗艦型標準配置</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="addon-note">※ 以上費用均為一次性追加，非月費訂閱制。實際報價依場館規模與導入需求另行確認。</p>
+  </div>
+
+  <!-- ══ MASCOT / BRAND STRIP ═══════════════════════ -->
+  <div class="brand-strip">
+    <img class="mascot-img" src="DM_assets/ryan-mascot.png" alt="Friends Golf Mascot">
+    <div class="brand-strip-text">
+      <h3>[ FRIENDS ] GOLF<br>讓高爾夫更親近、更有趣</h3>
+      <p>從個人練習到商業場館，我們提供完整的設備建置、教育訓練與長期營運支援，協助您順利踏入室內高爾夫球市場。</p>
+    </div>
+  </div>
+
+  <!-- ══ SUPPORT ═════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-eyebrow">導入支援</div>
+    <div class="section-heading">設備之外，我們全程陪伴</div>
+    <div class="support-grid">
+      <div class="support-item">
+        <span class="support-icon">🔧</span>
+        <h4>安裝建置</h4>
+        <p>場地確認、設備安裝、初期測試全程協助</p>
+      </div>
+      <div class="support-item">
+        <span class="support-icon">📚</span>
+        <h4>教育訓練</h4>
+        <p>操作說明、員工教育、客服應對指引</p>
+      </div>
+      <div class="support-item">
+        <span class="support-icon">🛠️</span>
+        <h4>售後維護</h4>
+        <p>遠端技術支援、定期點檢、快速響應</p>
+      </div>
+      <div class="support-item">
+        <span class="support-icon">📈</span>
+        <h4>營運支援</h4>
+        <p>定價建議、會員方案設計、行銷資料提供</p>
+      </div>
+      <div class="support-item">
+        <span class="support-icon">⬆️</span>
+        <h4>軟體升級</h4>
+        <p>功能升級與球場包彈性追加</p>
+      </div>
+      <div class="support-item">
+        <span class="support-icon">🤝</span>
+        <h4>長期合作</h4>
+        <p>品牌合作、加盟方案另行洽談</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CTA ════════════════════════════════════════ -->
+  <div class="cta-section">
+    <h2>立即了解<br><em>適合您的導入方案</em></h2>
+    <p>歡迎來電或來訊諮詢，我們將依您的場域條件<br>提供專屬設備建議與報價說明。</p>
+    <a href="https://www.friendsgolf.com.tw/#dataItem-mpaou0t7" target="_blank" class="cta-btn">預約諮詢 →</a>
+    <p class="cta-sub">提供場地坪數與預算需求，即可獲得完整方案建議</p>
+  </div>
+
+  <!-- ══ FOOTER ══════════════════════════════════════ -->
+  <div class="footer">
+    <img src="DM_assets/fg-logo.png" alt="Friends Golf"
+         style="height:40px; width:40px; object-fit:contain; display:block; margin:0 auto 10px; opacity:0.7;">
+    <div class="footer-brand">FRIENDS GOLF &nbsp;·&nbsp; <span style="color:var(--gold-deep);">金麻吉科技</span></div>
+    <p>
+      室內高爾夫球模擬器設備方案<br>
+      本資料所列功能與規格以實際交付版本為準<br>
+      詳細報價請與業務代表確認 ／ 費用均不含安裝、運費及相關稅費
+    </p>
+  </div>
+
+</div>
+</body>
+</html>
