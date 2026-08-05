@@ -392,19 +392,19 @@ document.addEventListener('DOMContentLoaded', async function() {
 (function(){
   function addBar(){
     if (document.getElementById('__fg_sticky_cta')) return;
+    if (!document.body) return;
     var bar = document.createElement('div');
     bar.id = '__fg_sticky_cta';
     bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:2147483647;display:flex;gap:8px;padding:10px 12px;background:rgba(10,14,11,0.96);box-shadow:0 2px 8px rgba(0,0,0,0.25);font-family:"Noto Sans TC",-apple-system,BlinkMacSystemFont,sans-serif;';
     bar.innerHTML =
       '<a href="https://line.me/R/ti/p/@005viumy" target="_blank" rel="noopener" style="flex:1;display:flex;align-items:center;justify-content:center;height:44px;border-radius:6px;background:#06C755;color:#fff;font-size:15px;font-weight:700;text-decoration:none;">加 LINE 詢問</a>' +
       '<a href="https://m.me/461047790434406" target="_blank" rel="noopener" style="flex:1;display:flex;align-items:center;justify-content:center;height:44px;border-radius:6px;background:#e5b935;color:#18130a;font-size:15px;font-weight:700;text-decoration:none;">傳訊息詢問</a>';
-    document.documentElement.appendChild(bar);
+    document.body.appendChild(bar);
   }
   addBar();
+  document.addEventListener('DOMContentLoaded', addBar);
   window.addEventListener('load', addBar);
-  if (window.MutationObserver) {
-    new MutationObserver(addBar).observe(document.documentElement, {childList:true, subtree:false});
-  }
+  setInterval(addBar, 600);
 })();
 </script>
 </body>
