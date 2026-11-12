@@ -142,16 +142,16 @@ textarea { resize:vertical; min-height:70px; }
     { id:'beitou',   name:'Friends Golf 北投店', area:'台北', addr:'台北市北投區', img:'DM_assets/venue_beitou.jpg' },
     { id:'vip',      name:'Quantum VIP 包廂',    area:'新北', addr:'新北市',       img:'DM_assets/quantum-vip-room.jpg' }
   ];
-  // 收費（每人每小時）：開放打席 NT$200、最多 3 人；包廂 NT$400、最多 4 人。18 洞約每人 1 小時
-  var BAYS = { open:{ name:'開放打席', price:200, max:3 }, room:{ name:'包廂', price:400, max:4 } };
-  var HOURS_PER_PLAYER_18 = 1;
+  // 收費（每人每小時）：開放打席 NT$200、最多 3 人；包廂 NT$350、最多 4 人。18 洞約每人 1 小時，每局最多 3 小時
+  var BAYS = { open:{ name:'開放打席', price:200, max:3 }, room:{ name:'包廂', price:350, max:4 } };
+  var HOURS_PER_PLAYER_18 = 1, MAX_HOURS = 3;
   function sizes(type) { var a = []; for (var n=2;n<=BAYS[type].max;n++) a.push(n); return a; }
-  function playHours(size, holes) { return size * HOURS_PER_PLAYER_18 * holes / 18; }
+  function playHours(size, holes) { return Math.min(size * HOURS_PER_PLAYER_18 * holes / 18, MAX_HOURS); }
   function fmtH(h) { return (h % 1 ? h.toFixed(1) : h) + ' 小時'; }
   var LEVELS = ['新手', '100+', '90~100', '80~90', '80以下'];
   var TAGS = ['新手歡迎', '女生友善', '快打不閒聊', '輕鬆聊天', '打完喝一杯', '可教學'];
   var WEEK = ['日','一','二','三','四','五','六'];
-  var KEY = 'fg_join_v3';
+  var KEY = 'fg_join_v4';
 
   function ymd(d) { return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2); }
   function addDays(n) { var d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+n); return d; }
@@ -255,7 +255,7 @@ textarea { resize:vertical; min-height:70px; }
       '<div class="field"><label>希望程度（18 洞桿數）</label>'+seg('level',LEVELS,draft.level)+'</div>' +
       '<div class="field"><label>球局氣氛（可複選）</label>'+tagBtns+'</div>' +
       '<div class="field"><label>給球友的話（選填）</label><textarea name="note" maxlength="80" placeholder="例：下班後輕鬆打，歡迎同事一起來">'+esc(draft.note)+'</textarea></div>' +
-      '<div class="rules">'+draft.size+' 人打 '+draft.holes+' 洞約 <b>'+fmtH(hrs)+'</b>，每人 <b>NT$'+est+'</b>（'+BAYS[draft.bay].name+' 每人每小時 NT$'+BAYS[draft.bay].price+'）<br>開打前 <b>3 小時</b>仍未湊滿，可選擇照打（人少打得快，時間與費用跟著減少）或自動取消、不收費。</div>' +
+      '<div class="rules">'+draft.size+' 人打 '+draft.holes+' 洞約 <b>'+fmtH(hrs)+'</b>'+(hrs>=MAX_HOURS && draft.size*draft.holes/18>MAX_HOURS?'（每局上限 '+MAX_HOURS+' 小時）':'')+'，每人 <b>NT$'+est+'</b>（'+BAYS[draft.bay].name+' 每人每小時 NT$'+BAYS[draft.bay].price+'）<br>開打前 <b>3 小時</b>仍未湊滿，可選擇照打（人少打得快，時間與費用跟著減少）或自動取消、不收費。</div>' +
       '<button class="btn btn-gold" type="submit">發佈球局</button>' +
       '</form>';
   }
