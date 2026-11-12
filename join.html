@@ -142,14 +142,16 @@ textarea { resize:vertical; min-height:70px; }
     { id:'beitou',   name:'Friends Golf 北投店', area:'台北', addr:'台北市北投區', img:'DM_assets/venue_beitou.jpg' },
     { id:'vip',      name:'Quantum VIP 包廂',    area:'新北', addr:'新北市',       img:'DM_assets/quantum-vip-room.jpg' }
   ];
-  // 收費：每人每小時 NT$200；每組最多 3 人；18 洞約每人 1 小時（3 人 = 3 小時）
-  var PRICE_PER_HOUR = 200, MAX_SIZE = 3, HOURS_PER_PLAYER_18 = 1;
+  // 收費（每人每小時）：開放打席 NT$200、最多 3 人；包廂 NT$400、最多 4 人。18 洞約每人 1 小時
+  var BAYS = { open:{ name:'開放打席', price:200, max:3 }, room:{ name:'包廂', price:400, max:4 } };
+  var HOURS_PER_PLAYER_18 = 1;
+  function sizes(type) { var a = []; for (var n=2;n<=BAYS[type].max;n++) a.push(n); return a; }
   function playHours(size, holes) { return size * HOURS_PER_PLAYER_18 * holes / 18; }
   function fmtH(h) { return (h % 1 ? h.toFixed(1) : h) + ' 小時'; }
   var LEVELS = ['新手', '100+', '90~100', '80~90', '80以下'];
   var TAGS = ['新手歡迎', '女生友善', '快打不閒聊', '輕鬆聊天', '打完喝一杯', '可教學'];
   var WEEK = ['日','一','二','三','四','五','六'];
-  var KEY = 'fg_join_v2';
+  var KEY = 'fg_join_v3';
 
   function ymd(d) { return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2); }
   function addDays(n) { var d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+n); return d; }
@@ -159,13 +161,13 @@ textarea { resize:vertical; min-height:70px; }
   function seed() {
     var names = ['阿明','小美','Kevin','Jason','Amy','老王','Eric','Vivian','志豪','佩珊','Leo','Tina'];
     var out = [], k = 0;
-    var plan = [[0,'19:30','flagship',2,'90~100',['打完喝一杯'],18],[0,'21:00','tianmu',1,'新手',['新手歡迎','可教學'],9],
-                [1,'12:30','beitou',2,'100+',['輕鬆聊天'],18],[1,'20:00','vip',1,'80~90',['快打不閒聊'],18],
-                [2,'19:00','flagship',1,'90~100',['女生友善'],18],[3,'10:00','tianmu',3,'新手',['新手歡迎'],18],
-                [4,'20:30','beitou',2,'80以下',['快打不閒聊'],9],[5,'14:00','flagship',1,'100+',['輕鬆聊天','打完喝一杯'],18]];
+    var plan = [[0,'19:30','flagship',2,'90~100',['打完喝一杯'],18,'room'],[0,'21:00','tianmu',1,'新手',['新手歡迎','可教學'],9,'open'],
+                [1,'12:30','beitou',2,'100+',['輕鬆聊天'],18,'open'],[1,'20:00','vip',2,'80~90',['快打不閒聊'],18,'room'],
+                [2,'19:00','flagship',1,'90~100',['女生友善'],18,'open'],[3,'10:00','tianmu',3,'新手',['新手歡迎'],18,'room'],
+                [4,'20:30','beitou',2,'80以下',['快打不閒聊'],9,'open'],[5,'14:00','flagship',1,'100+',['輕鬆聊天','打完喝一杯'],18,'room']];
     plan.forEach(function (p, i) {
       var members = []; for (var j=0;j<p[3];j++) members.push(names[(k++)%names.length]);
-      out.push({ id:'s'+i, date:ymd(addDays(p[0])), time:p[1], venue:p[2], holes:p[6], size:MAX_SIZE, hours:playHours(MAX_SIZE,p[6]),
+      out.push({ id:'s'+i, date:ymd(addDays(p[0])), time:p[1], venue:p[2], holes:p[6], bay:p[7], size:BAYS[p[7]].max, hours:playHours(BAYS[p[7]].max,p[6]),
                  members:members, host:members[0], level:p[4], tags:p[5], note:'', demo:true });
     });
     return out;
@@ -190,7 +192,7 @@ textarea { resize:vertical; min-height:70px; }
   // ───────── 共用 ─────────
   function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); }, 1800); }
   function isMine(g) { return g.members.indexOf(state.me.name) >= 0; }
-  function perHead(g) { return PRICE_PER_HOUR * g.hours; }
+  function perHead(g) { return BAYS[g.bay].price * g.hours; }
   function dateLabel(ds) { var d = new Date(ds+'T00:00:00'); var diff = Math.round((d - addDays(0))/86400000);
     return (diff===0?'今天':diff===1?'明天':(d.getMonth()+1)+'/'+d.getDate()) + '（' + WEEK[d.getDay()] + '）'; }
 
@@ -203,7 +205,7 @@ textarea { resize:vertical; min-height:70px; }
       var m = g.members[i];
       seats += m ? '<div class="seat taken'+(m===g.host?' host':'')+'" title="'+esc(m)+'">'+esc(m.charAt(0))+'</div>' : '<div class="seat open">＋</div>';
     }
-    var tags = '<span class="tag lv">⛳ '+esc(g.level)+'</span>' + g.tags.map(function(t){return '<span class="tag">#'+esc(t)+'</span>';}).join('');
+    var tags = '<span class="tag lv">'+(g.bay==='room'?'🚪 ':'🏌️ ')+BAYS[g.bay].name+'</span><span class="tag lv">⛳ '+esc(g.level)+'</span>' + g.tags.map(function(t){return '<span class="tag">#'+esc(t)+'</span>';}).join('');
     var act;
     if (mine) act = '<button class="btn btn-line" data-share="'+g.id+'">分享到 LINE 揪人</button><button class="btn btn-red" data-leave="'+g.id+'">'+(g.host===state.me.name?'取消球局':'退出')+'</button>';
     else act = '<button class="btn btn-gold" data-join="'+g.id+'" '+(open<=0?'disabled':'')+'>'+(open>0?'我要加入':'已額滿')+'</button>';
@@ -233,25 +235,27 @@ textarea { resize:vertical; min-height:70px; }
   }
 
   // ───────── 開局 ─────────
-  var draft = { venue:'flagship', date:ymd(addDays(0)), time:'20:00', holes:18, size:3, level:'90~100', tags:[], note:'' };
+  var draft = { venue:'flagship', date:ymd(addDays(0)), time:'20:00', holes:18, bay:'open', size:3, level:'90~100', tags:[], note:'' };
   function renderCreate() {
     var vOpts = VENUES.map(function(v){return '<option value="'+v.id+'"'+(v.id===draft.venue?' selected':'')+'>'+v.name+'</option>';}).join('');
     var dOpts = ''; for (var i=0;i<14;i++){ var k=ymd(addDays(i)); dOpts += '<option value="'+k+'"'+(k===draft.date?' selected':'')+'>'+dateLabel(k)+'</option>'; }
     var tOpts = ''; for (var h=9;h<=23;h++) ['00','30'].forEach(function(m){ var t=('0'+h).slice(-2)+':'+m; tOpts += '<option'+(t===draft.time?' selected':'')+'>'+t+'</option>'; });
     function seg(name, arr, cur, fmt) { return '<div class="seg">'+arr.map(function(x){return '<button type="button" class="'+(String(x)===String(cur)?'on':'')+'" data-seg="'+name+'" data-val="'+x+'">'+(fmt?fmt(x):x)+'</button>';}).join('')+'</div>'; }
     var tagBtns = '<div class="seg">'+TAGS.map(function(t){return '<button type="button" class="'+(draft.tags.indexOf(t)>=0?'on':'')+'" data-tag="'+t+'">#'+t+'</button>';}).join('')+'</div>';
-    var hrs = playHours(draft.size, draft.holes), est = PRICE_PER_HOUR * hrs;
+    if (draft.size > BAYS[draft.bay].max) draft.size = BAYS[draft.bay].max;
+    var hrs = playHours(draft.size, draft.holes), est = BAYS[draft.bay].price * hrs;
     view.innerHTML =
       '<section class="hero"><h1>開一局，<em>讓球友來找你</em></h1><p>先選好時段與場館，設定程度與氣氛，系統會推播給附近同程度的球友。</p></section>' +
       '<form class="form" id="createForm">' +
       '<div class="field"><label>場館</label><select name="venue">'+vOpts+'</select></div>' +
       '<div class="grid2"><div class="field"><label>日期</label><select name="date">'+dOpts+'</select></div><div class="field"><label>開打時間</label><select name="time">'+tOpts+'</select></div></div>' +
       '<div class="field"><label>打幾洞</label>'+seg('holes',[18,9],draft.holes,function(x){return x+' 洞';})+'</div>' +
-      '<div class="field"><label>一組幾人（含自己，最多 '+MAX_SIZE+' 人）</label>'+seg('size',[2,3],draft.size,function(x){return x+' 人';})+'</div>' +
+      '<div class="field"><label>打席類型</label>'+seg('bay',['open','room'],draft.bay,function(x){return BAYS[x].name+' · NT$'+BAYS[x].price+'/人/時';})+'</div>' +
+      '<div class="field"><label>一組幾人（含自己，最多 '+BAYS[draft.bay].max+' 人）</label>'+seg('size',sizes(draft.bay),draft.size,function(x){return x+' 人';})+'</div>' +
       '<div class="field"><label>希望程度（18 洞桿數）</label>'+seg('level',LEVELS,draft.level)+'</div>' +
       '<div class="field"><label>球局氣氛（可複選）</label>'+tagBtns+'</div>' +
       '<div class="field"><label>給球友的話（選填）</label><textarea name="note" maxlength="80" placeholder="例：下班後輕鬆打，歡迎同事一起來">'+esc(draft.note)+'</textarea></div>' +
-      '<div class="rules">'+draft.size+' 人打 '+draft.holes+' 洞約 <b>'+fmtH(hrs)+'</b>，每人 <b>NT$'+est+'</b>（每人每小時 NT$'+PRICE_PER_HOUR+'）<br>開打前 <b>3 小時</b>仍未湊滿，可選擇照打（人少打得快，時間與費用跟著減少）或自動取消、不收費。</div>' +
+      '<div class="rules">'+draft.size+' 人打 '+draft.holes+' 洞約 <b>'+fmtH(hrs)+'</b>，每人 <b>NT$'+est+'</b>（'+BAYS[draft.bay].name+' 每人每小時 NT$'+BAYS[draft.bay].price+'）<br>開打前 <b>3 小時</b>仍未湊滿，可選擇照打（人少打得快，時間與費用跟著減少）或自動取消、不收費。</div>' +
       '<button class="btn btn-gold" type="submit">發佈球局</button>' +
       '</form>';
   }
@@ -341,7 +345,7 @@ textarea { resize:vertical; min-height:70px; }
   document.addEventListener('submit', function (e) {
     if (e.target.id !== 'createForm') return;
     e.preventDefault(); syncDraft();
-    var g = { id:'u'+Date.now(), date:draft.date, time:draft.time, venue:draft.venue, holes:draft.holes, size:draft.size, hours:playHours(draft.size, draft.holes),
+    var g = { id:'u'+Date.now(), date:draft.date, time:draft.time, venue:draft.venue, holes:draft.holes, bay:draft.bay, size:draft.size, hours:playHours(draft.size, draft.holes),
               members:[state.me.name], host:state.me.name, level:draft.level, tags:draft.tags.slice(), note:draft.note.trim() };
     state.games.push(g); save();
     draft.tags = []; draft.note = '';
