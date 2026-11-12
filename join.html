@@ -137,10 +137,8 @@ textarea { resize:vertical; min-height:70px; }
 (function () {
   // ───────── 基本資料（Demo：之後改接 LINE LIFF 登入 + 後端 API）─────────
   var VENUES = [
-    { id:'flagship', name:'Friends Golf 旗艦店', area:'台北', addr:'台北市', img:'DM_assets/venue-flagship-interior.jpg' },
-    { id:'tianmu',   name:'Friends Golf 天母店', area:'台北', addr:'台北市士林區', img:'DM_assets/venue_tianmu.jpg' },
-    { id:'beitou',   name:'Friends Golf 北投店', area:'台北', addr:'台北市北投區', img:'DM_assets/venue_beitou.jpg' },
-    { id:'vip',      name:'Quantum VIP 包廂',    area:'新北', addr:'新北市',       img:'DM_assets/quantum-vip-room.jpg' }
+    // 目前只有北投旗艦店；之後展店時在此新增，開局畫面會自動出現場館選單
+    { id:'beitou', name:'Friends Golf 北投旗艦店', area:'台北', addr:'台北市北投區', img:'DM_assets/venue-flagship-interior.jpg' }
   ];
   // 收費（每人每小時）：開放打席 NT$200、2~3 人；包廂 NT$350、3~4 人。18 洞約每人 1 小時，每局最多 3 小時
   var BAYS = { open:{ name:'開放打席', price:200, min:2, max:3 }, room:{ name:'包廂', price:350, min:3, max:4 } };
@@ -151,7 +149,7 @@ textarea { resize:vertical; min-height:70px; }
   var LEVELS = ['新手', '100+', '90~100', '80~90', '80以下'];
   var TAGS = ['新手歡迎', '女生友善', '快打不閒聊', '輕鬆聊天', '打完喝一杯', '可教學'];
   var WEEK = ['日','一','二','三','四','五','六'];
-  var KEY = 'fg_join_v5';
+  var KEY = 'fg_join_v6';
 
   function ymd(d) { return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2); }
   function addDays(n) { var d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+n); return d; }
@@ -161,10 +159,10 @@ textarea { resize:vertical; min-height:70px; }
   function seed() {
     var names = ['阿明','小美','Kevin','Jason','Amy','老王','Eric','Vivian','志豪','佩珊','Leo','Tina'];
     var out = [], k = 0;
-    var plan = [[0,'19:30','flagship',2,'90~100',['打完喝一杯'],18,'room'],[0,'21:00','tianmu',1,'新手',['新手歡迎','可教學'],9,'open'],
-                [1,'12:30','beitou',2,'100+',['輕鬆聊天'],18,'open'],[1,'20:00','vip',2,'80~90',['快打不閒聊'],18,'room'],
-                [2,'19:00','flagship',1,'90~100',['女生友善'],18,'open'],[3,'10:00','tianmu',3,'新手',['新手歡迎'],18,'room'],
-                [4,'20:30','beitou',2,'80以下',['快打不閒聊'],9,'open'],[5,'14:00','flagship',1,'100+',['輕鬆聊天','打完喝一杯'],18,'room']];
+    var plan = [[0,'19:30','beitou',2,'90~100',['打完喝一杯'],18,'room'],[0,'21:00','beitou',1,'新手',['新手歡迎','可教學'],9,'open'],
+                [1,'12:30','beitou',2,'100+',['輕鬆聊天'],18,'open'],[1,'20:00','beitou',2,'80~90',['快打不閒聊'],18,'room'],
+                [2,'19:00','beitou',1,'90~100',['女生友善'],18,'open'],[3,'10:00','beitou',3,'新手',['新手歡迎'],18,'room'],
+                [4,'20:30','beitou',2,'80以下',['快打不閒聊'],9,'open'],[5,'14:00','beitou',1,'100+',['輕鬆聊天','打完喝一杯'],18,'room']];
     plan.forEach(function (p, i) {
       var members = []; for (var j=0;j<p[3];j++) members.push(names[(k++)%names.length]);
       out.push({ id:'s'+i, date:ymd(addDays(p[0])), time:p[1], venue:p[2], holes:p[6], bay:p[7], size:BAYS[p[7]].max, hours:playHours(BAYS[p[7]].max,p[6]),
@@ -237,7 +235,7 @@ textarea { resize:vertical; min-height:70px; }
   }
 
   // ───────── 開局 ─────────
-  var draft = { venue:'flagship', date:ymd(addDays(0)), time:'20:00', holes:18, bay:'open', size:3, level:'90~100', tags:[], note:'' };
+  var draft = { venue:'beitou', date:ymd(addDays(0)), time:'20:00', holes:18, bay:'open', size:3, level:'90~100', tags:[], note:'' };
   function renderCreate() {
     var vOpts = VENUES.map(function(v){return '<option value="'+v.id+'"'+(v.id===draft.venue?' selected':'')+'>'+v.name+'</option>';}).join('');
     var dOpts = ''; for (var i=0;i<14;i++){ var k=ymd(addDays(i)); dOpts += '<option value="'+k+'"'+(k===draft.date?' selected':'')+'>'+dateLabel(k)+'</option>'; }
@@ -249,7 +247,9 @@ textarea { resize:vertical; min-height:70px; }
     view.innerHTML =
       '<section class="hero"><h1>開一局，<em>讓球友來找你</em></h1><p>先選好時段與場館，設定程度與氣氛，系統會推播給附近同程度的球友。</p></section>' +
       '<form class="form" id="createForm">' +
-      '<div class="field"><label>場館</label><select name="venue">'+vOpts+'</select></div>' +
+      (VENUES.length > 1
+        ? '<div class="field"><label>場館</label><select name="venue">'+vOpts+'</select></div>'
+        : '<div class="field"><label>場館</label><input type="hidden" name="venue" value="'+VENUES[0].id+'"><div class="tag" style="font-size:14px;padding:11px 12px;color:var(--ink)">📍 '+VENUES[0].name+'（'+VENUES[0].addr+'）</div></div>') +
       '<div class="grid2"><div class="field"><label>日期</label><select name="date">'+dOpts+'</select></div><div class="field"><label>開打時間</label><select name="time">'+tOpts+'</select></div></div>' +
       '<div class="field"><label>打幾洞</label>'+seg('holes',[18,9],draft.holes,function(x){return x+' 洞';})+'</div>' +
       '<div class="field"><label>打席類型</label>'+seg('bay',['open','room'],draft.bay,function(x){return BAYS[x].name+' · NT$'+BAYS[x].price+'/人/時';})+'</div>' +
