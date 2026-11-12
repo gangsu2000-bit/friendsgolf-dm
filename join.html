@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Friends Golf 揪球</title>
+<meta name="description" content="室內高爾夫揪團配對：一個人也能湊滿一組。">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg:#0a0e0b; --bg-elev:#131a14; --bg-elev2:#1a231b; --line:rgba(229,185,53,.15);
+  --ink:#f2eee4; --ink-mute:#b8b2a4; --ink-dim:#6e685e;
+  --gold:#e5b935; --gold-soft:#f0cf6b; --green:#6e8c54; --red:#d9694f; --line-green:#06c755;
+}
+body { font-family:-apple-system,'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif; background:#111; color:var(--ink); -webkit-font-smoothing:antialiased; }
+.app { max-width:600px; margin:0 auto; min-height:100vh; background:var(--bg); padding-bottom:84px; position:relative; }
+button { font:inherit; cursor:pointer; border:0; background:none; color:inherit; }
+input,select,textarea { font:inherit; color:var(--ink); background:var(--bg-elev2); border:1px solid var(--line); border-radius:10px; padding:11px 12px; width:100%; }
+select { appearance:none; }
+textarea { resize:vertical; min-height:70px; }
+
+.top { position:sticky; top:0; z-index:5; background:rgba(10,14,11,.94); backdrop-filter:blur(8px); padding:14px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; }
+.brand { font-weight:900; letter-spacing:1px; font-size:15px; }
+.brand b { color:var(--gold); }
+.brand small { display:block; font-size:10px; color:var(--ink-dim); letter-spacing:2px; font-weight:600; margin-top:2px; }
+.me-chip { font-size:11px; color:var(--ink-mute); border:1px solid var(--line); border-radius:99px; padding:5px 10px; }
+.me-chip b { color:var(--gold); }
+
+.hero { padding:20px 16px 6px; }
+.hero h1 { font-size:22px; font-weight:900; line-height:1.3; }
+.hero h1 em { color:var(--gold); font-style:normal; }
+.hero p { font-size:12px; color:var(--ink-mute); margin-top:6px; line-height:1.6; }
+
+.dates { display:flex; gap:8px; overflow-x:auto; padding:14px 16px 4px; scrollbar-width:none; }
+.dates::-webkit-scrollbar { display:none; }
+.date { flex:0 0 auto; width:54px; padding:8px 0; text-align:center; border-radius:12px; background:var(--bg-elev); border:1px solid transparent; }
+.date .dw { font-size:10px; color:var(--ink-dim); }
+.date .dd { font-size:17px; font-weight:800; margin-top:2px; }
+.date.on { border-color:var(--gold); background:rgba(229,185,53,.1); }
+.date.on .dd { color:var(--gold); }
+
+.filters { display:flex; gap:8px; padding:10px 16px; flex-wrap:wrap; }
+.pill { font-size:12px; padding:6px 12px; border-radius:99px; background:var(--bg-elev); color:var(--ink-mute); border:1px solid var(--line); }
+.pill.on { background:var(--gold); color:#1a1405; border-color:var(--gold); font-weight:700; }
+
+.list { padding:6px 16px 16px; display:grid; gap:12px; }
+.empty { text-align:center; color:var(--ink-dim); font-size:13px; padding:40px 10px; line-height:1.8; }
+
+.card { background:var(--bg-elev); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+.card-img { height:96px; background-size:cover; background-position:center; position:relative; }
+.card-img::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,.1),rgba(19,26,20,.95)); }
+.card-img .when { position:absolute; left:14px; bottom:10px; z-index:1; font-size:20px; font-weight:900; }
+.card-img .when small { font-size:12px; font-weight:600; color:var(--ink-mute); margin-left:6px; }
+.badge { position:absolute; right:12px; top:12px; z-index:1; font-size:11px; font-weight:800; padding:4px 9px; border-radius:99px; background:var(--gold); color:#1a1405; }
+.badge.full { background:#444; color:#bbb; }
+.badge.mine { background:var(--green); color:#fff; }
+.card-body { padding:12px 14px 14px; }
+.row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.venue { font-size:14px; font-weight:800; }
+.venue small { display:block; font-size:11px; color:var(--ink-dim); font-weight:500; margin-top:2px; }
+.price { text-align:right; font-size:16px; font-weight:900; color:var(--gold); }
+.price small { display:block; font-size:10px; color:var(--ink-dim); font-weight:500; }
+.seats { display:flex; gap:6px; margin:12px 0 10px; }
+.seat { width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font-size:12px; font-weight:800; }
+.seat.taken { background:#2a3a2b; color:var(--ink); border:1px solid var(--green); }
+.seat.host { border-color:var(--gold); }
+.seat.open { border:1.5px dashed var(--ink-dim); color:var(--ink-dim); }
+.tags { display:flex; gap:6px; flex-wrap:wrap; }
+.tag { font-size:11px; padding:3px 8px; border-radius:6px; background:var(--bg-elev2); color:var(--ink-mute); }
+.tag.lv { color:var(--gold-soft); }
+.note { font-size:12px; color:var(--ink-mute); margin-top:10px; line-height:1.6; }
+.actions { display:flex; gap:8px; margin-top:12px; }
+.btn { flex:1; padding:12px; border-radius:12px; font-size:14px; font-weight:800; text-align:center; }
+.btn-gold { background:var(--gold); color:#1a1405; }
+.btn-ghost { border:1px solid var(--line); color:var(--ink-mute); }
+.btn-line { background:var(--line-green); color:#fff; }
+.btn-red { border:1px solid rgba(217,105,79,.5); color:var(--red); }
+.btn:disabled { opacity:.4; cursor:not-allowed; }
+
+.form { padding:16px; display:grid; gap:14px; }
+.field label { display:block; font-size:12px; color:var(--ink-mute); margin-bottom:6px; font-weight:600; }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.seg { display:flex; gap:6px; flex-wrap:wrap; }
+.seg button { flex:1; min-width:64px; padding:10px 6px; border-radius:10px; background:var(--bg-elev2); border:1px solid var(--line); font-size:13px; color:var(--ink-mute); }
+.seg button.on { border-color:var(--gold); color:var(--gold); background:rgba(229,185,53,.08); font-weight:800; }
+.hint { font-size:11px; color:var(--ink-dim); line-height:1.6; }
+.section-t { padding:18px 16px 4px; font-size:13px; font-weight:800; color:var(--gold); letter-spacing:1px; }
+
+.profile { margin:16px; padding:16px; border-radius:16px; background:var(--bg-elev); border:1px solid var(--line); display:flex; gap:14px; align-items:center; }
+.avatar { width:52px; height:52px; border-radius:50%; background:var(--gold); color:#1a1405; display:grid; place-items:center; font-weight:900; font-size:20px; }
+.profile .nm { font-size:16px; font-weight:800; }
+.profile .meta { font-size:12px; color:var(--ink-mute); margin-top:4px; }
+.manner { margin-left:auto; text-align:center; }
+.manner b { font-size:22px; color:var(--gold); display:block; }
+.manner span { font-size:10px; color:var(--ink-dim); }
+
+.tabbar { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:600px; display:flex; background:rgba(13,20,16,.97); border-top:1px solid var(--line); padding-bottom:env(safe-area-inset-bottom); z-index:10; }
+.tab { flex:1; padding:10px 0 12px; text-align:center; font-size:11px; color:var(--ink-dim); }
+.tab .ic { font-size:20px; display:block; margin-bottom:2px; }
+.tab.on { color:var(--gold); font-weight:800; }
+.tab.make .ic { width:40px; height:40px; margin:-18px auto 2px; border-radius:50%; background:var(--gold); color:#1a1405; display:grid; place-items:center; font-weight:900; box-shadow:0 4px 14px rgba(229,185,53,.35); }
+
+.sheet-bg { position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:20; display:none; align-items:flex-end; justify-content:center; }
+.sheet-bg.show { display:flex; }
+.sheet { width:100%; max-width:600px; background:var(--bg-elev); border-radius:20px 20px 0 0; padding:20px 16px calc(20px + env(safe-area-inset-bottom)); max-height:88vh; overflow:auto; }
+.sheet h3 { font-size:18px; font-weight:900; margin-bottom:4px; }
+.sheet .sub { font-size:12px; color:var(--ink-mute); margin-bottom:14px; }
+.kv { display:flex; justify-content:space-between; font-size:13px; padding:9px 0; border-bottom:1px solid var(--line); }
+.kv span { color:var(--ink-mute); }
+.rules { margin:14px 0; padding:12px; border-radius:12px; background:var(--bg-elev2); font-size:12px; color:var(--ink-mute); line-height:1.7; }
+.rules b { color:var(--gold-soft); }
+
+.toast { position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(20px); background:var(--gold); color:#1a1405; font-weight:800; font-size:13px; padding:10px 18px; border-radius:99px; opacity:0; transition:.25s; z-index:30; pointer-events:none; white-space:nowrap; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.demo { margin:4px 16px 0; font-size:10px; color:var(--ink-dim); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">FRIENDS <b>GOLF</b><small>揪 球 · SCREEN GOLF JOIN</small></div>
+    <div class="me-chip" id="meChip"></div>
+  </header>
+  <main id="view"></main>
+</div>
+
+<nav class="tabbar">
+  <button class="tab" data-tab="browse"><span class="ic">⛳</span>找球局</button>
+  <button class="tab make" data-tab="create"><span class="ic">＋</span>開局</button>
+  <button class="tab" data-tab="my"><span class="ic">☺</span>我的</button>
+</nav>
+
+<div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  // ───────── 基本資料（Demo：之後改接 LINE LIFF 登入 + 後端 API）─────────
+  var VENUES = [
+    // 目前只有北投旗艦店；之後展店時在此新增，開局畫面會自動出現場館選單
+    { id:'beitou', name:'Friends Golf 北投旗艦店', area:'台北', addr:'台北市北投區', img:'DM_assets/venue-flagship-interior.jpg' }
+  ];
+  // 收費（每人每小時）：開放打席 NT$200、2~3 人；包廂 NT$350、3~4 人。18 洞約每人 1 小時，每局最多 3 小時
+  var BAYS = { open:{ name:'開放打席', price:200, min:2, max:3 }, room:{ name:'包廂', price:350, min:3, max:4 } };
+  var HOURS_PER_PLAYER_18 = 1, MAX_HOURS = 3;
+  function sizes(type) { var a = []; for (var n=BAYS[type].min;n<=BAYS[type].max;n++) a.push(n); return a; }
+  function playHours(size, holes) { return Math.min(size * HOURS_PER_PLAYER_18 * holes / 18, MAX_HOURS); }
+  function fmtH(h) { return (h % 1 ? h.toFixed(1) : h) + ' 小時'; }
+  var LEVELS = ['新手', '100+', '90~100', '80~90', '80以下'];
+  var TAGS = ['新手歡迎', '女生友善', '快打不閒聊', '輕鬆聊天', '打完喝一杯', '可教學'];
+  var WEEK = ['日','一','二','三','四','五','六'];
+  var KEY = 'fg_join_v6';
+
+  function ymd(d) { return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2); }
+  function addDays(n) { var d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+n); return d; }
+  function vById(id) { for (var i=0;i<VENUES.length;i++) if (VENUES[i].id===id) return VENUES[i]; return VENUES[0]; }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+
+  function seed() {
+    var names = ['阿明','小美','Kevin','Jason','Amy','老王','Eric','Vivian','志豪','佩珊','Leo','Tina'];
+    var out = [], k = 0;
+    var plan = [[0,'19:30','beitou',2,'90~100',['打完喝一杯'],18,'room'],[0,'21:00','beitou',1,'新手',['新手歡迎','可教學'],9,'open'],
+                [1,'12:30','beitou',2,'100+',['輕鬆聊天'],18,'open'],[1,'20:00','beitou',2,'80~90',['快打不閒聊'],18,'room'],
+                [2,'19:00','beitou',1,'90~100',['女生友善'],18,'open'],[3,'10:00','beitou',3,'新手',['新手歡迎'],18,'room'],
+                [4,'20:30','beitou',2,'80以下',['快打不閒聊'],9,'open'],[5,'14:00','beitou',1,'100+',['輕鬆聊天','打完喝一杯'],18,'room']];
+    plan.forEach(function (p, i) {
+      var members = []; for (var j=0;j<p[3];j++) members.push(names[(k++)%names.length]);
+      out.push({ id:'s'+i, date:ymd(addDays(p[0])), time:p[1], venue:p[2], holes:p[6], bay:p[7], size:BAYS[p[7]].max, hours:playHours(BAYS[p[7]].max,p[6]),
+                 members:members, host:members[0], level:p[4], tags:p[5], note:'', demo:true });
+    });
+    return out;
+  }
+
+  var state = load();
+  function load() {
+    var s = null;
+    try { s = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+    if (!s || !s.games) s = { me:{ name:'我', level:'90~100', manner:36.5, played:0 }, games:seed(), noshow:0 };
+    // 移除過期球局
+    var today = ymd(addDays(0));
+    s.games = s.games.filter(function (g) { return g.date >= today; });
+    if (!s.games.some(function (g) { return g.demo; })) s.games = s.games.concat(seed());
+    return s;
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+  var ui = { tab:'browse', date:ymd(addDays(0)), level:'全部', area:'全部' };
+  var view = document.getElementById('view');
+
+  // ───────── 共用 ─────────
+  function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); }, 1800); }
+  function isMine(g) { return g.members.indexOf(state.me.name) >= 0; }
+  function needMin(g) { return Math.max(0, BAYS[g.bay].min - g.members.length); }
+  function perHead(g) { return BAYS[g.bay].price * g.hours; }
+  function dateLabel(ds) { var d = new Date(ds+'T00:00:00'); var diff = Math.round((d - addDays(0))/86400000);
+    return (diff===0?'今天':diff===1?'明天':(d.getMonth()+1)+'/'+d.getDate()) + '（' + WEEK[d.getDay()] + '）'; }
+
+  function card(g) {
+    var v = vById(g.venue), open = g.size - g.members.length, mine = isMine(g);
+    var badge = mine ? '<span class="badge mine">'+(g.host===state.me.name?'我開的局':'已加入')+'</span>'
+              : needMin(g)>0 ? '<span class="badge">差 '+needMin(g)+' 人成團</span>'
+              : open>0 ? '<span class="badge">已成團 · 可再加 '+open+' 人</span>' : '<span class="badge full">已滿</span>';
+    var seats = '';
+    for (var i=0;i<g.size;i++) {
+      var m = g.members[i];
+      seats += m ? '<div class="seat taken'+(m===g.host?' host':'')+'" title="'+esc(m)+'">'+esc(m.charAt(0))+'</div>' : '<div class="seat open">＋</div>';
+    }
+    var tags = '<span class="tag lv">'+(g.bay==='room'?'🚪 ':'🏌️ ')+BAYS[g.bay].name+'</span><span class="tag lv">⛳ '+esc(g.level)+'</span>' + g.tags.map(function(t){return '<span class="tag">#'+esc(t)+'</span>';}).join('');
+    var act;
+    if (mine) act = '<button class="btn btn-line" data-share="'+g.id+'">分享到 LINE 揪人</button><button class="btn btn-red" data-leave="'+g.id+'">'+(g.host===state.me.name?'取消球局':'退出')+'</button>';
+    else act = '<button class="btn btn-gold" data-join="'+g.id+'" '+(open<=0?'disabled':'')+'>'+(open>0?'我要加入':'已額滿')+'</button>';
+    return '<article class="card">' +
+      '<div class="card-img" style="background-image:url('+v.img+')">'+badge+'<div class="when">'+g.time+'<small>'+dateLabel(g.date)+' · '+g.holes+' 洞 · 約 '+fmtH(g.hours)+'</small></div></div>' +
+      '<div class="card-body"><div class="row"><div class="venue">'+esc(v.name)+'<small>'+esc(v.addr)+' · 主揪 '+esc(g.host)+'</small></div>' +
+      '<div class="price">NT$'+perHead(g)+'<small>/ 人（'+g.size+' 人 · '+g.holes+' 洞）</small></div></div>' +
+      '<div class="seats">'+seats+'</div><div class="tags">'+tags+'</div>' +
+      (g.note?'<div class="note">「'+esc(g.note)+'」</div>':'') +
+      '<div class="actions">'+act+'</div></div></article>';
+  }
+
+  // ───────── 找球局 ─────────
+  function renderBrowse() {
+    var dates = '';
+    for (var i=0;i<7;i++) { var d = addDays(i), k = ymd(d);
+      dates += '<button class="date'+(k===ui.date?' on':'')+'" data-date="'+k+'"><div class="dw">'+(i===0?'今天':'週'+WEEK[d.getDay()])+'</div><div class="dd">'+d.getDate()+'</div></button>'; }
+    var lv = ['全部'].concat(LEVELS).map(function(l){return '<button class="pill'+(l===ui.level?' on':'')+'" data-level="'+l+'">'+l+'</button>';}).join('');
+    var games = state.games.filter(function (g) {
+      return g.date===ui.date && (ui.level==='全部'||g.level===ui.level);
+    }).sort(function(a,b){ return (a.size-a.members.length===0) - (b.size-b.members.length===0) || a.time.localeCompare(b.time); });
+    view.innerHTML =
+      '<section class="hero"><h1>一個人也能打，<br><em>湊滿一組</em>再開桿</h1><p>選日期、找缺人的球局，按一下就加入。找不到？自己開局，系統幫你揪。</p></section>' +
+      '<div class="dates">'+dates+'</div><div class="filters">'+lv+'</div>' +
+      '<div class="list">'+(games.length?games.map(card).join(''):'<div class="empty">這天還沒有球局<br><button class="btn btn-gold" style="margin-top:12px;max-width:200px" data-go="create">我來開一局</button></div>')+'</div>' +
+      '<p class="demo">※ 原型展示：資料只存在本機瀏覽器，球局為示範資料。</p>';
+  }
+
+  // ───────── 開局 ─────────
+  var draft = { venue:'beitou', date:ymd(addDays(0)), time:'20:00', holes:18, bay:'open', size:3, level:'90~100', tags:[], note:'' };
+  function renderCreate() {
+    var vOpts = VENUES.map(function(v){return '<option value="'+v.id+'"'+(v.id===draft.venue?' selected':'')+'>'+v.name+'</option>';}).join('');
+    var dOpts = ''; for (var i=0;i<14;i++){ var k=ymd(addDays(i)); dOpts += '<option value="'+k+'"'+(k===draft.date?' selected':'')+'>'+dateLabel(k)+'</option>'; }
+    var tOpts = ''; for (var h=9;h<=23;h++) ['00','30'].forEach(function(m){ var t=('0'+h).slice(-2)+':'+m; tOpts += '<option'+(t===draft.time?' selected':'')+'>'+t+'</option>'; });
+    function seg(name, arr, cur, fmt) { return '<div class="seg">'+arr.map(function(x){return '<button type="button" class="'+(String(x)===String(cur)?'on':'')+'" data-seg="'+name+'" data-val="'+x+'">'+(fmt?fmt(x):x)+'</button>';}).join('')+'</div>'; }
+    var tagBtns = '<div class="seg">'+TAGS.map(function(t){return '<button type="button" class="'+(draft.tags.indexOf(t)>=0?'on':'')+'" data-tag="'+t+'">#'+t+'</button>';}).join('')+'</div>';
+    draft.size = Math.min(Math.max(draft.size, BAYS[draft.bay].min), BAYS[draft.bay].max);
+    var hrs = playHours(draft.size, draft.holes), est = BAYS[draft.bay].price * hrs;
+    view.innerHTML =
+      '<section class="hero"><h1>開一局，<em>讓球友來找你</em></h1><p>先選好時段與場館，設定程度與氣氛，系統會推播給附近同程度的球友。</p></section>' +
+      '<form class="form" id="createForm">' +
+      (VENUES.length > 1
+        ? '<div class="field"><label>場館</label><select name="venue">'+vOpts+'</select></div>'
+        : '<div class="field"><label>場館</label><input type="hidden" name="venue" value="'+VENUES[0].id+'"><div class="tag" style="font-size:14px;padding:11px 12px;color:var(--ink)">📍 '+VENUES[0].name+'（'+VENUES[0].addr+'）</div></div>') +
+      '<div class="grid2"><div class="field"><label>日期</label><select name="date">'+dOpts+'</select></div><div class="field"><label>開打時間</label><select name="time">'+tOpts+'</select></div></div>' +
+      '<div class="field"><label>打幾洞</label>'+seg('holes',[18,9],draft.holes,function(x){return x+' 洞';})+'</div>' +
+      '<div class="field"><label>打席類型</label>'+seg('bay',['open','room'],draft.bay,function(x){return BAYS[x].name+' · NT$'+BAYS[x].price+'/人/時';})+'</div>' +
+      '<div class="field"><label>一組幾人（含自己，'+BAYS[draft.bay].min+'~'+BAYS[draft.bay].max+' 人）</label>'+seg('size',sizes(draft.bay),draft.size,function(x){return x+' 人';})+'</div>' +
+      '<div class="field"><label>希望程度（18 洞桿數）</label>'+seg('level',LEVELS,draft.level)+'</div>' +
+      '<div class="field"><label>球局氣氛（可複選）</label>'+tagBtns+'</div>' +
+      '<div class="field"><label>給球友的話（選填）</label><textarea name="note" maxlength="80" placeholder="例：下班後輕鬆打，歡迎同事一起來">'+esc(draft.note)+'</textarea></div>' +
+      '<div class="rules">'+draft.size+' 人打 '+draft.holes+' 洞約 <b>'+fmtH(hrs)+'</b>'+(hrs>=MAX_HOURS && draft.size*draft.holes/18>MAX_HOURS?'（每局上限 '+MAX_HOURS+' 小時）':'')+'，每人 <b>NT$'+est+'</b>（'+BAYS[draft.bay].name+' 每人每小時 NT$'+BAYS[draft.bay].price+'）<br>'+BAYS[draft.bay].name+'最少 <b>'+BAYS[draft.bay].min+' 人</b>成團。開打前 <b>3 小時</b>未達最少人數自動取消、不收費；已成團但未滿則照常開打（人少打得快，時間與費用跟著減少）。</div>' +
+      '<button class="btn btn-gold" type="submit">發佈球局</button>' +
+      '</form>';
+  }
+
+  // ───────── 我的 ─────────
+  function renderMy() {
+    var mine = state.games.filter(isMine).sort(function(a,b){ return (a.date+a.time).localeCompare(b.date+b.time); });
+    view.innerHTML =
+      '<div class="profile"><div class="avatar">'+esc(state.me.name.charAt(0))+'</div><div><div class="nm">'+esc(state.me.name)+'</div>' +
+      '<div class="meta">程度 '+esc(state.me.level)+' · 已參加 '+state.me.played+' 局</div></div>' +
+      '<div class="manner"><b>'+state.me.manner.toFixed(1)+'°</b><span>球品溫度</span></div></div>' +
+      '<div class="form" style="padding-top:0"><div class="grid2"><div class="field"><label>暱稱</label><input id="meName" maxlength="8" value="'+esc(state.me.name)+'"></div>' +
+      '<div class="field"><label>我的程度</label><select id="meLevel">'+LEVELS.map(function(l){return '<option'+(l===state.me.level?' selected':'')+'>'+l+'</option>';}).join('')+'</select></div></div>' +
+      '<p class="hint">球品溫度：每局結束後球友互評（準時、禮貌、打球節奏）。放鳥一次 −3°，低於 30° 需預付訂金才能加入球局。</p></div>' +
+      '<div class="section-t">我的球局</div><div class="list">'+(mine.length?mine.map(card).join(''):'<div class="empty">還沒有球局<br><button class="btn btn-gold" style="margin-top:12px;max-width:200px" data-go="browse">去找球局</button></div>')+'</div>' +
+      '<div class="section-t">需要協助？</div><div class="list"><a class="btn btn-line" style="display:block;text-decoration:none" href="https://line.me/R/ti/p/@005viumy" target="_blank" rel="noopener">LINE 聯絡 Friends Golf 客服</a></div>';
+  }
+
+  // ───────── Sheet ─────────
+  var bg = document.getElementById('sheetBg'), sheet = document.getElementById('sheet');
+  function openSheet(html) { sheet.innerHTML = html; bg.classList.add('show'); }
+  function closeSheet() { bg.classList.remove('show'); }
+  bg.addEventListener('click', function (e) { if (e.target === bg) closeSheet(); });
+
+  function confirmJoin(g) {
+    var v = vById(g.venue), open = g.size - g.members.length;
+    var levelWarn = g.level !== state.me.level ? '<br>⚠️ 此局希望程度 <b>'+esc(g.level)+'</b>，你的程度為 '+esc(state.me.level)+'。' : '';
+    var needDeposit = state.me.manner < 30;
+    openSheet('<h3>加入球局</h3><p class="sub">'+esc(v.name)+'</p>' +
+      '<div class="kv"><span>時間</span><b>'+dateLabel(g.date)+' '+g.time+'（'+g.holes+' 洞 · 約 '+fmtH(g.hours)+'）</b></div>' +
+      '<div class="kv"><span>目前成員</span><b>'+g.members.map(esc).join('、')+'</b></div>' +
+      '<div class="kv"><span>加入後</span><b>'+(open===1?'🎉 湊滿開打！':needMin(g)===1?'✅ 成團確定（可再加 '+(open-1)+' 人）':needMin(g)>1?'還差 '+(needMin(g)-1)+' 人成團':'還可再加 '+(open-1)+' 人')+'</b></div>' +
+      '<div class="kv"><span>預估費用</span><b style="color:var(--gold)">NT$'+perHead(g)+' / 人</b></div>' +
+      '<div class="rules">現場付款（可用 LINE Pay / 街口）。<br>開打前 <b>24 小時</b>內退出或未到，球品溫度 −3°。'+(needDeposit?'<br>你的球品溫度低於 30°，需先預付 <b>NT$200</b> 訂金。':'')+levelWarn+'</div>' +
+      '<div class="actions"><button class="btn btn-ghost" data-close>再想想</button><button class="btn btn-gold" data-confirm="'+g.id+'">確認加入</button></div>');
+  }
+
+  function shareLine(g) {
+    var v = vById(g.venue), open = g.size - g.members.length;
+    var text = '⛳ 室內高爾夫揪球！\n' + dateLabel(g.date) + ' ' + g.time + '｜' + v.name + '\n程度 ' + g.level + '｜每人約 NT$' + perHead(g) +
+      (open>0 ? '\n還缺 ' + open + ' 人，快來 👉 ' : '\n已湊滿，感謝！ ') + location.href.split('#')[0] + '#g=' + g.id;
+    window.open('https://line.me/R/msg/text/?' + encodeURIComponent(text), '_blank');
+  }
+
+  // ───────── 事件 ─────────
+  function find(id) { for (var i=0;i<state.games.length;i++) if (state.games[i].id===id) return state.games[i]; }
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('button,[data-close]'); if (!t) return;
+    var d = t.dataset;
+    if (d.tab) { ui.tab = d.tab; render(); window.scrollTo(0,0); }
+    else if (d.go) { ui.tab = d.go; render(); window.scrollTo(0,0); }
+    else if (d.date) { ui.date = d.date; render(); }
+    else if (d.level) { ui.level = d.level; render(); }
+    else if (d.join) { confirmJoin(find(d.join)); }
+    else if (d.confirm) {
+      var g = find(d.confirm);
+      if (g && g.members.length < g.size && !isMine(g)) { g.members.push(state.me.name); save(); }
+      closeSheet(); render(); toast(g.members.length===g.size ? '🎉 湊滿了！已通知所有球友' : needMin(g)===0 ? '✅ 成團確定！已 LINE 通知所有球友' : '已加入，成團時會 LINE 通知你');
+    }
+    else if (d.leave) {
+      var g2 = find(d.leave);
+      if (g2.host === state.me.name) state.games = state.games.filter(function(x){return x!==g2;});
+      else g2.members = g2.members.filter(function(m){return m!==state.me.name;});
+      save(); render(); toast('已取消');
+    }
+    else if (d.share) { shareLine(find(d.share)); }
+    else if (d.seg) { draft[d.seg] = isNaN(d.val) ? d.val : Number(d.val); syncDraft(); renderCreate(); }
+    else if (d.tag) { var i = draft.tags.indexOf(d.tag); if (i>=0) draft.tags.splice(i,1); else if (draft.tags.length<3) draft.tags.push(d.tag); syncDraft(); renderCreate(); }
+    else if (d.close !== undefined) closeSheet();
+  });
+
+  function syncDraft() {
+    var f = document.getElementById('createForm'); if (!f) return;
+    draft.venue = f.venue.value; draft.date = f.date.value; draft.time = f.time.value; draft.note = f.note.value;
+  }
+  document.addEventListener('change', function (e) {
+    if (e.target.form && e.target.form.id === 'createForm') { syncDraft(); renderCreate(); }
+    if (e.target.id === 'meLevel') { state.me.level = e.target.value; save(); render(); }
+  });
+  document.addEventListener('input', function (e) {
+    if (e.target.id === 'meName') {
+      var old = state.me.name, nv = e.target.value.trim() || '我';
+      state.games.forEach(function (g) { g.members = g.members.map(function(m){return m===old?nv:m;}); if (g.host===old) g.host = nv; });
+      state.me.name = nv; save(); document.getElementById('meChip').innerHTML = '球品 <b>'+state.me.manner.toFixed(1)+'°</b> · '+esc(nv);
+    }
+  });
+  document.addEventListener('submit', function (e) {
+    if (e.target.id !== 'createForm') return;
+    e.preventDefault(); syncDraft();
+    var g = { id:'u'+Date.now(), date:draft.date, time:draft.time, venue:draft.venue, holes:draft.holes, bay:draft.bay, size:draft.size, hours:playHours(draft.size, draft.holes),
+              members:[state.me.name], host:state.me.name, level:draft.level, tags:draft.tags.slice(), note:draft.note.trim() };
+    state.games.push(g); save();
+    draft.tags = []; draft.note = '';
+    ui.tab = 'browse'; ui.date = g.date; ui.level = '全部'; render(); window.scrollTo(0,0);
+    toast('球局已發佈！分享到 LINE 揪更快');
+  });
+
+  function render() {
+    document.querySelectorAll('.tab').forEach(function (b) { b.classList.toggle('on', b.dataset.tab === ui.tab); });
+    document.getElementById('meChip').innerHTML = '球品 <b>'+state.me.manner.toFixed(1)+'°</b> · '+esc(state.me.name);
+    if (ui.tab === 'create') renderCreate(); else if (ui.tab === 'my') renderMy(); else renderBrowse();
+  }
+
+  // 從 LINE 分享連結進來：#g=<id> → 跳到該日期並開啟加入視窗
+  var m = location.hash.match(/g=([\w]+)/);
+  render();
+  if (m) { var sg = find(m[1]); if (sg) { ui.date = sg.date; render(); if (!isMine(sg) && sg.members.length < sg.size) confirmJoin(sg); } }
+})();
+</script>
+</body>
+</html>
